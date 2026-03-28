@@ -1,20 +1,24 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import { View } from "react-native";
+import Hud from "./components/Hud";
+import createTestEntities from "./entities";
 
 export default function App() {
+  const entities = createTestEntities();
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={{ flex: 1, backgroundColor: "#67e8f9" }}>
+      <Hud
+        score={120}
+        gameOver={false}
+        youWin={false}
+        onRestart={() => console.log("Restart pressed")}
+      />
+
+      {Object.entries(entities).map(([key, entity]) => {
+        const Renderer = entity.renderer;
+        return <Renderer key={key} {...entity} />;
+      })}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
