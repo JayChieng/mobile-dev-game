@@ -1,24 +1,77 @@
-import React from "react";
-import { View } from "react-native";
+import React, { useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { GameEngine } from "react-native-game-engine";
 import Hud from "./components/Hud";
-import createTestEntities from "./entities";
+import Physics from "./Physics";
+import createEntities from "./entities";
 
 export default function App() {
-  const entities = createTestEntities();
+  const gameEngineRef = useRef(null);
+
+  const [score, setScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
+  const [youWin, setYouWin] = useState(false);
+
+  const buildEntities = () =>
+    createEntities({
+      onScoreChange: (newScore) => setScore(newScore),
+      onGameOver: () => {
+        setGameOver(true);
+        setYouWin(false);
+        gameEngineRef.current?.stop();
+      },
+      onWin: () => {
+        setYouWin(true);
+        setGameOver(false);
+        gameEngineRef.current?.stop();
+      },
+    });
+
+  const [entities, setEntities] = useState(buildEntities());
+
+  const handleRestart = () => {
+    setScore(0);
+    setGameOver(false);
+    setYouWin(false);
+
+    const newEntities = buildEntities();
+    setEntities(newEntities);
+
+    setTimeout(() => {
+      if (gameEngineRef.current) {
+        gameEngineRef.current.swap(newEntities);
+        gameEngineRef.current.start();
+      }
+    }, 50);
+  };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#67e8f9" }}>
-      <Hud
-        score={120}
-        gameOver={false}
-        youWin={false}
-        onRestart={() => console.log("Restart pressed")}
+    <View style={styles.container}>
+      <GameEngine
+        ref={gameEngineRef}
+        systems={[Physics]}
+        entities={entities}
+        style={styles.container}
       />
 
-      {Object.entries(entities).map(([key, entity]) => {
-        const Renderer = entity.renderer;
-        return <Renderer key={key} {...entity} />;
-      })}
+      <View style={styles.hudContainer} pointerEvents="box-none">
+        <Hud
+          score={score}
+          gameOver={gameOver}
+          youWin={youWin}
+          onRestart={handleRestart}
+        />
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#67e8f9",
+  },
+  hudContainer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+});

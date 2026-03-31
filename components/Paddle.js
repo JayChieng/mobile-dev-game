@@ -16,10 +16,8 @@ export default function Paddle({ body, size }) {
         top: y,
         width,
         height,
-        backgroundColor: "#4f46e5",
-        borderRadius: 10,
-        borderWidth: 2,
-        borderColor: "#1e1b4b",
+        borderRadius: 6,
+        backgroundColor: "#0f172a",
       }}
     />
   );

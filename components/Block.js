@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 
 export default function Block({ body, size, hp }) {
   const width = size[0];
@@ -8,13 +8,11 @@ export default function Block({ body, size, hp }) {
   const x = body.position.x - width / 2;
   const y = body.position.y - height / 2;
 
-  let backgroundColor = "#22c55e";
+  let backgroundColor = "#22c55e"; // default green
 
-  if (hp === 2) {
-    backgroundColor = "#f59e0b";
-  } else if (hp === 3) {
-    backgroundColor = "#ef4444";
-  }
+  if (hp === 3) backgroundColor = "#ef4444"; // red
+  else if (hp === 2) backgroundColor = "#f97316"; // orange
+  else if (hp === 1) backgroundColor = "#22c55e"; // green
 
   return (
     <View
@@ -24,23 +22,9 @@ export default function Block({ body, size, hp }) {
         top: y,
         width,
         height,
+        borderRadius: 4,
         backgroundColor,
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: "#222222",
-        justifyContent: "center",
-        alignItems: "center",
       }}
-    >
-      <Text
-        style={{
-          color: "#ffffff",
-          fontWeight: "bold",
-          fontSize: 16,
-        }}
-      >
-        {hp}
-      </Text>
-    </View>
+    />
   );
 }

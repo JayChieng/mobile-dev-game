@@ -1,99 +1,60 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 
-export default function Hud({
-  score = 0,
-  gameOver = false,
-  youWin = false,
-  onRestart,
-}) {
+export default function Hud({ score, gameOver, youWin, onRestart }) {
   return (
-    <>
-      <View
-        style={{
-          position: "absolute",
-          top: 70,
-          left: 20,
-          right: 20,
-          zIndex: 10,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 22,
-              fontWeight: "bold",
-              color: "#111827",
-            }}
-          >
-            Score: {score}
+    <View
+      style={{
+        position: "absolute",
+        top: 40,
+        left: 0,
+        right: 0,
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ fontSize: 22, fontWeight: "bold" }}>
+        Score: {score}
+      </Text>
+
+      {gameOver && (
+        <View style={{ marginTop: 20, alignItems: "center" }}>
+          <Text style={{ fontSize: 24, color: "red" }}>
+            Game Over
           </Text>
 
-          <Pressable
+          <TouchableOpacity
             onPress={onRestart}
             style={{
-              backgroundColor: "#111827",
-              paddingHorizontal: 14,
-              paddingVertical: 8,
-              borderRadius: 8,
+              marginTop: 10,
+              padding: 10,
+              backgroundColor: "#1e293b",
+              borderRadius: 5,
             }}
           >
-            <Text
-              style={{
-                color: "#ffffff",
-                fontWeight: "bold",
-              }}
-            >
-              Restart
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-
-      {(gameOver || youWin) && (
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 20,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: youWin
-                ? "rgba(34, 197, 94, 0.95)"
-                : "rgba(239, 68, 68, 0.95)",
-              paddingHorizontal: 28,
-              paddingVertical: 18,
-              borderRadius: 14,
-              minWidth: 200,
-            }}
-          >
-            <Text
-              style={{
-                color: "#ffffff",
-                fontSize: 28,
-                fontWeight: "bold",
-                textAlign: "center",
-              }}
-            >
-              {youWin ? "You Win" : "Game Over"}
-            </Text>
-          </View>
+            <Text style={{ color: "white" }}>Restart</Text>
+          </TouchableOpacity>
         </View>
       )}
-    </>
+
+      {youWin && (
+        <View style={{ marginTop: 20, alignItems: "center" }}>
+          <Text style={{ fontSize: 24, color: "green" }}>
+            You Win!
+          </Text>
+
+          <TouchableOpacity
+            onPress={onRestart}
+            style={{
+              marginTop: 10,
+              padding: 10,
+              backgroundColor: "#1e293b",
+              borderRadius: 5,
+            }}
+          >
+            <Text style={{ color: "white" }}>Restart</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
   );
 }
