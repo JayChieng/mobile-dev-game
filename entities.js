@@ -133,30 +133,66 @@ export default function createEntities(callbacks = {}) {
     },
 
     paddle: {
+<<<<<<< HEAD
       body: paddle,
       size: [PADDLE_WIDTH, PADDLE_HEIGHT],
+=======
+      body: { position: { x: screenWidth / 2, y: bottomBoundaryY - 80 } },
+      size: [120, 20],
+>>>>>>> main
       renderer: Paddle,
     },
 
     topWall: {
+<<<<<<< HEAD
       body: topWall,
       size: [SCREEN_WIDTH, WALL_THICKNESS],
+=======
+      body: {
+        position: {
+          x: screenWidth / 2,
+          y: topBoundaryY,
+        },
+      },
+      size: [screenWidth, wallThickness],
+>>>>>>> main
       renderer: Boundary,
     },
 
     leftWall: {
+<<<<<<< HEAD
       body: leftWall,
       size: [WALL_THICKNESS, BOTTOM_BOUNDARY_Y - TOP_BOUNDARY_Y],
+=======
+      body: {
+        position: {
+          x: wallThickness / 2,
+          y: (topBoundaryY + bottomBoundaryY) / 2,
+        },
+      },
+      size: [wallThickness, bottomBoundaryY - topBoundaryY],
+>>>>>>> main
       renderer: Boundary,
     },
 
     rightWall: {
+<<<<<<< HEAD
       body: rightWall,
       size: [WALL_THICKNESS, BOTTOM_BOUNDARY_Y - TOP_BOUNDARY_Y],
+=======
+      body: {
+        position: {
+          x: screenWidth - wallThickness / 2,
+          y: (topBoundaryY + bottomBoundaryY) / 2,
+        },
+      },
+      size: [wallThickness, bottomBoundaryY - topBoundaryY],
+>>>>>>> main
       renderer: Boundary,
     },
 
     bottomWall: {
+<<<<<<< HEAD
       body: bottomWall,
       size: [SCREEN_WIDTH, WALL_THICKNESS],
       renderer: Boundary,
@@ -173,3 +209,65 @@ export default function createEntities(callbacks = {}) {
 }
 
 export { SCREEN_WIDTH, SCREEN_HEIGHT, WALL_THICKNESS, TOP_BOUNDARY_Y, BOTTOM_BOUNDARY_Y };
+=======
+      body: {
+        position: {
+          x: screenWidth / 2,
+          y: bottomBoundaryY,
+        },
+      },
+      size: [screenWidth, wallThickness],
+      renderer: Boundary,
+    },
+
+    block_1: {
+      body: { position: { x: 60, y: 200 } },
+      size: [58, 30],
+      hp: 2,
+      renderer: Block,
+    },
+
+    block_2: {
+      body: { position: { x: 155, y: 200 } },
+      size: [58, 30],
+      hp: 1,
+      renderer: Block,
+    },
+
+    block_3: {
+      body: { position: { x: 300, y: 200 } },
+      size: [58, 30],
+      hp: 3,
+      renderer: Block,
+    },
+
+    block_4: {
+      body: { position: { x: screenWidth - 55, y: 200 } },
+      size: [58, 30],
+      hp: 2,
+      renderer: Block,
+    },
+
+    block_5: {
+      body: { position: { x: 95, y: 250 } },
+      size: [58, 30],
+      hp: 3,
+      renderer: Block,
+    },
+
+    block_6: {
+      body: { position: { x: 230, y: 250 } },
+      size: [58, 30],
+      hp: 1,
+      renderer: Block,
+    },
+
+    block_7: {
+      body: { position: { x: screenWidth - 100, y: 250 } },
+      size: [58, 30],
+      hp: 2,
+      renderer: Block,
+    },
+  };
+}
+>>>>>>> main
