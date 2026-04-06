@@ -1,5 +1,9 @@
 import Matter from "matter-js";
-import { SCREEN_WIDTH, WALL_THICKNESS } from "../entities";
+import {
+  BOTTOM_BOUNDARY_Y,
+  SCREEN_WIDTH,
+  WALL_THICKNESS,
+} from "../entities";
 
 // Keep the paddle inside the playable horizontal range.
 function clamp(value, min, max) {
@@ -27,11 +31,35 @@ function freezeBody(body) {
   Matter.Body.setAngularVelocity(body, 0);
 }
 
+function lockObstacleToLane(body, x, y, velocityX) {
+  Matter.Body.setPosition(body, { x, y });
+  Matter.Body.setVelocity(body, { x: velocityX, y: 0 });
+  Matter.Body.setAngularVelocity(body, 0);
+}
+
+function lockBallAtBottom(body, radius) {
+  Matter.Body.setPosition(body, {
+    x: body.position.x,
+    y: BOTTOM_BOUNDARY_Y - radius,
+  });
+  freezeBody(body);
+}
+
+function getBallKeys(entities) {
+  return Object.keys(entities).filter((key) => key === "ball" || key === "ball2");
+}
+
+function getActiveBallKeys(entities) {
+  return getBallKeys(entities).filter((key) => !entities[key].fallen);
+}
+
 // Advance physics, process collisions, and translate touch input into paddle movement.
 const Physics = (entities, { time, touches }) => {
   const { engine, world, callbacks } = entities.physics;
-  const ball = entities.ball.body;
+  const ballBodies = getBallKeys(entities).map((key) => entities[key].body);
+  const activeBallBodies = getActiveBallKeys(entities).map((key) => entities[key].body);
   const paddle = entities.paddle.body;
+  const obstaclePaddle = entities.obstaclePaddle.body;
 
   // Register collision listeners once for this Matter engine instance.
   if (!entities.physics.collisionSetup) {
@@ -44,20 +72,37 @@ const Physics = (entities, { time, touches }) => {
 
         const labels = [bodyA.label, bodyB.label];
 
-        const hitBottom = labels.includes("ball") && labels.includes("bottomWall");
-        // A ball touching the bottom sensor means the player has lost the round.
+        const hitBottom =
+          labels.includes("bottomWall") &&
+          (labels.includes("ball") || labels.includes("ball2"));
+        // Freeze each ball on first contact with the bottom; the round ends after both balls are down.
         if (hitBottom) {
-          // Freeze both bodies immediately so loss state cannot drift for another frame.
-          entities.physics.gameOver = true;
-          freezeBody(ball);
-          freezeBody(paddle);
-          callbacks?.onGameOver?.();
+          const ballKey = bodyA.label === "bottomWall" ? bodyB.label : bodyA.label;
+
+          if (!entities[ballKey] || entities[ballKey].fallen) {
+            return;
+          }
+
+          entities[ballKey].fallen = true;
+          lockBallAtBottom(entities[ballKey].body, entities[ballKey].size[0] / 2);
+
+          if (getActiveBallKeys(entities).length === 0) {
+            entities.physics.gameOver = true;
+            getBallKeys(entities).forEach((key) => {
+              lockBallAtBottom(entities[key].body, entities[key].size[0] / 2);
+            });
+            freezeBody(paddle);
+            freezeBody(obstaclePaddle);
+            callbacks?.onGameOver?.();
+          }
           return;
         }
 
         const isBallBlock =
-          (bodyA.label === "ball" && bodyB.label.startsWith("block_")) ||
-          (bodyB.label === "ball" && bodyA.label.startsWith("block_"));
+          ((bodyA.label === "ball" || bodyA.label === "ball2") &&
+            bodyB.label.startsWith("block_")) ||
+          ((bodyB.label === "ball" || bodyB.label === "ball2") &&
+            bodyA.label.startsWith("block_"));
 
         // Only block collisions should reduce hp and award score.
         if (isBallBlock) {
@@ -91,8 +136,9 @@ const Physics = (entities, { time, touches }) => {
 
   // Hard-stop all movement after win/lose so the final frame stays stable.
   if (entities.physics.gameOver || entities.physics.youWin) {
-    freezeBody(ball);
+    ballBodies.forEach(freezeBody);
     freezeBody(paddle);
+    freezeBody(obstaclePaddle);
     return entities;
   }
 
@@ -114,6 +160,29 @@ const Physics = (entities, { time, touches }) => {
     });
   }
 
+  const obstacleHalfWidth = entities.obstaclePaddle.size[0] / 2;
+  const minObstacleX = WALL_THICKNESS + obstacleHalfWidth;
+  const maxObstacleX = SCREEN_WIDTH - WALL_THICKNESS - obstacleHalfWidth;
+  const obstacleSpeed = 2;
+  const obstacleFixedY = entities.obstaclePaddle.fixedY;
+  const nextObstacleX =
+    obstaclePaddle.position.x + obstacleSpeed * entities.physics.obstacleDirection;
+
+  if (nextObstacleX <= minObstacleX) {
+    entities.physics.obstacleDirection = 1;
+    lockObstacleToLane(obstaclePaddle, minObstacleX, obstacleFixedY, obstacleSpeed);
+  } else if (nextObstacleX >= maxObstacleX) {
+    entities.physics.obstacleDirection = -1;
+    lockObstacleToLane(obstaclePaddle, maxObstacleX, obstacleFixedY, -obstacleSpeed);
+  } else {
+    lockObstacleToLane(
+      obstaclePaddle,
+      nextObstacleX,
+      obstacleFixedY,
+      obstacleSpeed * entities.physics.obstacleDirection
+    );
+  }
+
   const now = time.current;
 
   if (!entities.physics.lastSpeedIncrease) {
@@ -122,10 +191,12 @@ const Physics = (entities, { time, touches }) => {
 
   // Increase speed on a timer to make long rallies progressively harder.
   if (now - entities.physics.lastSpeedIncrease >= 3000) {
-    // Gradually increase difficulty while preserving the current travel direction.
-    Matter.Body.setVelocity(ball, {
-      x: ball.velocity.x * 1.05,
-      y: ball.velocity.y * 1.05,
+    // Gradually increase difficulty while preserving each ball's current travel direction.
+    activeBallBodies.forEach((body) => {
+      Matter.Body.setVelocity(body, {
+        x: body.velocity.x * 1.05,
+        y: body.velocity.y * 1.05,
+      });
     });
     entities.physics.lastSpeedIncrease = now;
   }

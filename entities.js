@@ -12,14 +12,21 @@ const TOP_BOUNDARY_Y = 130;
 const BOTTOM_BOUNDARY_Y = SCREEN_HEIGHT - 120;
 
 const BALL_RADIUS = 10;
-const PADDLE_WIDTH = 120;
-const PADDLE_HEIGHT = 20;
+const PADDLE_WIDTH = 210;
+const PADDLE_HEIGHT = 38;
+const OBSTACLE_PADDLE_WIDTH = 175;
+const OBSTACLE_PADDLE_HEIGHT = 30;
 const BLOCK_WIDTH = 58;
 const BLOCK_HEIGHT = 30;
 const BLOCK_COUNT = 7;
 const BLOCK_MIN_HP = 1;
 const BLOCK_MAX_HP = 3;
 const BLOCK_PADDING = 20;
+const OBSTACLE_PADDLE_GAP = 44;
+const MOVING_BODY_COLLISION_GROUP = -1;
+const BALL_IMAGE = require("./assets/ball.png");
+const PADDLE_IMAGE = require("./assets/paddle.png");
+const OBSTACLE_PADDLE_IMAGE = require("./assets/obstaclepaddle.png");
 
 // Create one static block entity that stores both Matter data and render metadata.
 function createBlock(world, key, x, y, hp) {
@@ -110,6 +117,12 @@ export default function createEntities(callbacks = {}) {
   engine.gravity.y = 0;
 
   const world = engine.world;
+  const blockLayouts = generateBlockLayouts();
+  const lowestBlockBottom = Math.max(
+    ...blockLayouts.map(({ y }) => y + BLOCK_HEIGHT / 2)
+  );
+  const obstaclePaddleY =
+    lowestBlockBottom + OBSTACLE_PADDLE_GAP + OBSTACLE_PADDLE_HEIGHT / 2;
 
   const ball = Matter.Bodies.circle(
     SCREEN_WIDTH / 2,
@@ -123,6 +136,27 @@ export default function createEntities(callbacks = {}) {
       inertia: Infinity,
       inverseInertia: 0,
       label: "ball",
+      collisionFilter: {
+        group: MOVING_BODY_COLLISION_GROUP,
+      },
+    }
+  );
+
+  const ball2 = Matter.Bodies.circle(
+    SCREEN_WIDTH / 2,
+    BOTTOM_BOUNDARY_Y - 100,
+    BALL_RADIUS,
+    {
+      restitution: 1,
+      friction: 0,
+      frictionAir: 0,
+      frictionStatic: 0,
+      inertia: Infinity,
+      inverseInertia: 0,
+      label: "ball2",
+      collisionFilter: {
+        group: MOVING_BODY_COLLISION_GROUP,
+      },
     }
   );
 
@@ -134,6 +168,22 @@ export default function createEntities(callbacks = {}) {
     {
       isStatic: true,
       label: "paddle",
+    }
+  );
+
+  const obstaclePaddle = Matter.Bodies.rectangle(
+    SCREEN_WIDTH / 2,
+    obstaclePaddleY,
+    OBSTACLE_PADDLE_WIDTH,
+    OBSTACLE_PADDLE_HEIGHT,
+    {
+      friction: 0,
+      frictionAir: 0,
+      frictionStatic: 0,
+      restitution: 1,
+      inertia: Infinity,
+      inverseInertia: 0,
+      label: "obstaclePaddle",
     }
   );
 
@@ -182,13 +232,24 @@ export default function createEntities(callbacks = {}) {
     }
   );
 
-  Matter.Body.setVelocity(ball, { x: 3.5, y: -5 });
+  Matter.Body.setVelocity(ball, { x: 2.5, y: -4.5 });
+  Matter.Body.setVelocity(ball2, { x: -2.5, y: -4.5 });
+  Matter.Body.setVelocity(obstaclePaddle, { x: 4, y: 0 });
 
-  Matter.World.add(world, [ball, paddle, topWall, leftWall, rightWall, bottomWall]);
+  Matter.World.add(world, [
+    ball,
+    ball2,
+    paddle,
+    obstaclePaddle,
+    topWall,
+    leftWall,
+    rightWall,
+    bottomWall,
+  ]);
 
   // Materialize the randomized block layout into named entity entries.
   const blockEntities = Object.fromEntries(
-    generateBlockLayouts().map(({ key, x, y, hp }) => [
+    blockLayouts.map(({ key, x, y, hp }) => [
       key,
       createBlock(world, key, x, y, hp),
     ])
@@ -203,17 +264,35 @@ export default function createEntities(callbacks = {}) {
       gameOver: false,
       youWin: false,
       lastSpeedIncrease: 0,
+      obstacleDirection: 1,
     },
 
     ball: {
       body: ball,
       size: [BALL_RADIUS * 2, BALL_RADIUS * 2],
+      imageSource: BALL_IMAGE,
+      renderer: Ball,
+    },
+
+    ball2: {
+      body: ball2,
+      size: [BALL_RADIUS * 2, BALL_RADIUS * 2],
+      imageSource: BALL_IMAGE,
       renderer: Ball,
     },
 
     paddle: {
       body: paddle,
       size: [PADDLE_WIDTH, PADDLE_HEIGHT],
+      imageSource: PADDLE_IMAGE,
+      renderer: Paddle,
+    },
+
+    obstaclePaddle: {
+      body: obstaclePaddle,
+      size: [OBSTACLE_PADDLE_WIDTH, OBSTACLE_PADDLE_HEIGHT],
+      fixedY: obstaclePaddleY,
+      imageSource: OBSTACLE_PADDLE_IMAGE,
       renderer: Paddle,
     },
 

@@ -21,6 +21,7 @@ const GameScreen = ({
     <View style={styles.container}>
       <GameEngine
         ref={gameEngineRef}
+        running={isRunning}
         systems={systems}
         entities={entities}
         style={styles.container}
@@ -43,7 +44,7 @@ const GameScreen = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#6ef8fd",
+    backgroundColor: "#fae7be",
   },
   hudContainer: {
     ...StyleSheet.absoluteFillObject,

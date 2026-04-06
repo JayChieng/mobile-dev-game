@@ -1,7 +1,7 @@
 import React from "react";
-import { View } from "react-native";
+import { Image } from "react-native";
 
-export default function Paddle({ body, size }) {
+export default function Paddle({ body, size, imageSource }) {
   const width = size[0];
   const height = size[1];
 
@@ -9,7 +9,8 @@ export default function Paddle({ body, size }) {
   const y = body.position.y - height / 2;
 
   return (
-    <View
+    <Image
+      source={imageSource}
       style={{
         position: "absolute",
         left: x,
@@ -17,8 +18,8 @@ export default function Paddle({ body, size }) {
         width,
         height,
         borderRadius: 6,
-        backgroundColor: "#0f172a",
       }}
+      resizeMode="contain"
     />
   );
 }
