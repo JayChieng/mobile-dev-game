@@ -12,24 +12,26 @@ const TOP_BOUNDARY_Y = 130;
 const BOTTOM_BOUNDARY_Y = SCREEN_HEIGHT - 120;
 
 const BALL_RADIUS = 10;
-const PADDLE_WIDTH = 210;
-const PADDLE_HEIGHT = 38;
-const OBSTACLE_PADDLE_WIDTH = 175;
-const OBSTACLE_PADDLE_HEIGHT = 30;
+const PADDLE_WIDTH = 135;
+const PADDLE_HEIGHT = 24;
+const OBSTACLE_PADDLE_WIDTH = 112;
+const OBSTACLE_PADDLE_HEIGHT = 19;
 const BLOCK_WIDTH = 58;
 const BLOCK_HEIGHT = 30;
 const BLOCK_COUNT = 7;
-const BLOCK_MIN_HP = 1;
-const BLOCK_MAX_HP = 3;
+const BLOCK_HP = 2;
 const BLOCK_PADDING = 20;
 const OBSTACLE_PADDLE_GAP = 44;
 const MOVING_BODY_COLLISION_GROUP = -1;
 const BALL_IMAGE = require("./assets/ball.png");
+const BLOCKS_IMAGE = require("./assets/blocks.png");
 const PADDLE_IMAGE = require("./assets/paddle.png");
 const OBSTACLE_PADDLE_IMAGE = require("./assets/obstaclepaddle.png");
+const BLOCK_VARIANT_GROUP_COUNT = 3;
+const BLOCK_VARIANT_ROW_COUNT = 6;
 
 // Create one static block entity that stores both Matter data and render metadata.
-function createBlock(world, key, x, y, hp) {
+function createBlock(world, key, x, y, hp, variantGroup, variantRow) {
   const body = Matter.Bodies.rectangle(x, y, BLOCK_WIDTH, BLOCK_HEIGHT, {
     isStatic: true,
     label: key,
@@ -41,6 +43,9 @@ function createBlock(world, key, x, y, hp) {
     body,
     size: [BLOCK_WIDTH, BLOCK_HEIGHT],
     hp,
+    variantGroup,
+    variantRow,
+    imageSource: BLOCKS_IMAGE,
     type: "block",
     renderer: Block,
   };
@@ -104,7 +109,9 @@ function generateBlockLayouts() {
       key: `block_${index + 1}`,
       x: position.x,
       y: position.y,
-      hp: randomInt(BLOCK_MIN_HP, BLOCK_MAX_HP),
+      hp: BLOCK_HP,
+      variantGroup: randomInt(0, BLOCK_VARIANT_GROUP_COUNT - 1),
+      variantRow: randomInt(0, BLOCK_VARIANT_ROW_COUNT - 1),
     });
   }
 
@@ -235,7 +242,6 @@ export default function createEntities(callbacks = {}) {
   Matter.Body.setVelocity(ball, { x: 2.5, y: -4.5 });
   Matter.Body.setVelocity(ball2, { x: -2.5, y: -4.5 });
   Matter.Body.setVelocity(obstaclePaddle, { x: 4, y: 0 });
-
   Matter.World.add(world, [
     ball,
     ball2,
@@ -249,9 +255,9 @@ export default function createEntities(callbacks = {}) {
 
   // Materialize the randomized block layout into named entity entries.
   const blockEntities = Object.fromEntries(
-    blockLayouts.map(({ key, x, y, hp }) => [
+    blockLayouts.map(({ key, x, y, hp, variantGroup, variantRow }) => [
       key,
-      createBlock(world, key, x, y, hp),
+      createBlock(world, key, x, y, hp, variantGroup, variantRow),
     ])
   );
 

@@ -1,18 +1,25 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { Image, View } from "react-native";
 
-export default function Block({ body, size, hp }) {
+const SPRITE_COLUMNS = 6;
+const SPRITE_ROWS = 6;
+
+export default function Block({
+  body,
+  size,
+  hp,
+  variantGroup = 0,
+  variantRow = 0,
+  imageSource,
+}) {
   const width = size[0];
   const height = size[1];
 
   const x = body.position.x - width / 2;
   const y = body.position.y - height / 2;
-
-  let backgroundColor = "#22c55e"; // default green
-
-  if (hp === 3) backgroundColor = "#ef4444"; // red
-  else if (hp === 2) backgroundColor = "#f97316"; // orange
-  else if (hp === 1) backgroundColor = "#22c55e"; // green
+  const frameColumn = variantGroup * 2 + (hp === 2 ? 0 : 1);
+  const spriteOffsetX = -(frameColumn * width);
+  const spriteOffsetY = -(variantRow * height);
 
   return (
     <View
@@ -22,17 +29,20 @@ export default function Block({ body, size, hp }) {
         top: y,
         width,
         height,
-        borderRadius: 10,
-        backgroundColor,
-        borderWidth: 2,
-        borderColor: "#1f2937",
-        alignItems: "center",
-        justifyContent: "center",
+        overflow: "hidden",
       }}
     >
-      <Text style={{ color: "white", fontSize: 16, fontWeight: "700" }}>
-        {hp}
-      </Text>
+      <Image
+        source={imageSource}
+        style={{
+          position: "absolute",
+          left: spriteOffsetX,
+          top: spriteOffsetY,
+          width: width * SPRITE_COLUMNS,
+          height: height * SPRITE_ROWS,
+        }}
+        resizeMode="stretch"
+      />
     </View>
   );
 }

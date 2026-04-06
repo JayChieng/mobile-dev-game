@@ -1,5 +1,5 @@
 import React from "react";
-import { Image } from "react-native";
+import { Image, View } from "react-native";
 
 export default function Paddle({ body, size, imageSource }) {
   const width = size[0];
@@ -9,8 +9,7 @@ export default function Paddle({ body, size, imageSource }) {
   const y = body.position.y - height / 2;
 
   return (
-    <Image
-      source={imageSource}
+    <View
       style={{
         position: "absolute",
         left: x,
@@ -18,8 +17,17 @@ export default function Paddle({ body, size, imageSource }) {
         width,
         height,
         borderRadius: 6,
+        overflow: "hidden",
       }}
-      resizeMode="contain"
-    />
+    >
+      <Image
+        source={imageSource}
+        style={{
+          width: "100%",
+          height: "100%",
+        }}
+        resizeMode="cover"
+      />
+    </View>
   );
 }

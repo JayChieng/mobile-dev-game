@@ -163,7 +163,7 @@ const Physics = (entities, { time, touches }) => {
   const obstacleHalfWidth = entities.obstaclePaddle.size[0] / 2;
   const minObstacleX = WALL_THICKNESS + obstacleHalfWidth;
   const maxObstacleX = SCREEN_WIDTH - WALL_THICKNESS - obstacleHalfWidth;
-  const obstacleSpeed = 2;
+  const obstacleSpeed = 1.5;
   const obstacleFixedY = entities.obstaclePaddle.fixedY;
   const nextObstacleX =
     obstaclePaddle.position.x + obstacleSpeed * entities.physics.obstacleDirection;
