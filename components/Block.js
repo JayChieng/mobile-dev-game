@@ -17,6 +17,7 @@ export default function Block({
 
   const x = body.position.x - width / 2;
   const y = body.position.y - height / 2;
+  // Each block variant uses two adjacent frames: intact when hp is 2, cracked when hp is 1.
   const frameColumn = variantGroup * 2 + (hp === 2 ? 0 : 1);
   const spriteOffsetX = -(frameColumn * width);
   const spriteOffsetY = -(variantRow * height);

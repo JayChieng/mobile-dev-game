@@ -109,6 +109,7 @@ function generateBlockLayouts() {
       key: `block_${index + 1}`,
       x: position.x,
       y: position.y,
+      // Every block takes two hits and gets a random sprite variant from the sheet.
       hp: BLOCK_HP,
       variantGroup: randomInt(0, BLOCK_VARIANT_GROUP_COUNT - 1),
       variantRow: randomInt(0, BLOCK_VARIANT_ROW_COUNT - 1),
@@ -128,6 +129,7 @@ export default function createEntities(callbacks = {}) {
   const lowestBlockBottom = Math.max(
     ...blockLayouts.map(({ y }) => y + BLOCK_HEIGHT / 2)
   );
+  // Anchor the moving obstacle a little below the lowest randomized block.
   const obstaclePaddleY =
     lowestBlockBottom + OBSTACLE_PADDLE_GAP + OBSTACLE_PADDLE_HEIGHT / 2;
 

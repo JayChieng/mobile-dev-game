@@ -32,6 +32,7 @@ function freezeBody(body) {
 }
 
 function lockObstacleToLane(body, x, y, velocityX) {
+  // Reapply a horizontal-only lane so the obstacle stays non-static but never drifts vertically.
   Matter.Body.setPosition(body, { x, y });
   Matter.Body.setVelocity(body, { x: velocityX, y: 0 });
   Matter.Body.setAngularVelocity(body, 0);
