@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import { SCREEN_WIDTH, WALL_THICKNESS } from "./entities";
+import { SCREEN_WIDTH, WALL_THICKNESS } from "../entities";
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(value, max));

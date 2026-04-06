@@ -1,12 +1,13 @@
 import React, { useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { GameEngine } from "react-native-game-engine";
-import Hud from "./components/Hud";
-import Physics from "./Physics";
+import WelcomeScreen from "./screens/WelcomeScreen";
+import GameScreen from "./screens/GameScreen";
 import createEntities from "./entities";
 
 export default function App() {
   const gameEngineRef = useRef(null);
+
+  const [screen, setScreen] = useState('welcome');
+
 
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -45,33 +46,18 @@ export default function App() {
     }, 50);
   };
 
-  return (
-    <View style={styles.container}>
-      <GameEngine
-        ref={gameEngineRef}
-        systems={[Physics]}
-        entities={entities}
-        style={styles.container}
-      />
+  if (screen === 'welcome') {
+    return <WelcomeScreen onStart={() => setScreen('game')} />;
+  }
 
-      <View style={styles.hudContainer} pointerEvents="box-none">
-        <Hud
-          score={score}
-          gameOver={gameOver}
-          youWin={youWin}
-          onRestart={handleRestart}
-        />
-      </View>
-    </View>
+  return (
+    <GameScreen 
+      entities={entities}
+      gameEngineRef={gameEngineRef}
+      score={score}
+      gameOver={gameOver}
+      youWin={youWin}
+      onRestart={handleRestart}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#67e8f9",
-  },
-  hudContainer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-});
