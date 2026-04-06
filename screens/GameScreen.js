@@ -5,7 +5,16 @@ import Hud from "../components/Hud";
 import Physics from "../systems/Physics";
 import TouchControl from "../systems/TouchControl";
 
-const GameScreen = ({ entities, gameEngineRef, score, gameOver, youWin, onRestart }) => {
+const GameScreen = ({
+  entities,
+  gameEngineRef,
+  score,
+  gameOver,
+  youWin,
+  isRunning,
+  onToggleRunning,
+  onRestart,
+}) => {
   const systems = [Physics?.default ?? Physics, TouchControl?.default ?? TouchControl];
 
   return (
@@ -22,6 +31,8 @@ const GameScreen = ({ entities, gameEngineRef, score, gameOver, youWin, onRestar
           score={score}
           gameOver={gameOver}
           youWin={youWin}
+          isRunning={isRunning}
+          onToggleRunning={onToggleRunning}
           onRestart={onRestart}
         />
       </View>
@@ -32,7 +43,7 @@ const GameScreen = ({ entities, gameEngineRef, score, gameOver, youWin, onRestar
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#67e8f9",
+    backgroundColor: "#6ef8fd",
   },
   hudContainer: {
     ...StyleSheet.absoluteFillObject,

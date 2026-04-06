@@ -16,7 +16,12 @@ const PADDLE_WIDTH = 120;
 const PADDLE_HEIGHT = 20;
 const BLOCK_WIDTH = 58;
 const BLOCK_HEIGHT = 30;
+const BLOCK_COUNT = 7;
+const BLOCK_MIN_HP = 1;
+const BLOCK_MAX_HP = 3;
+const BLOCK_PADDING = 20;
 
+// Create one static block entity that stores both Matter data and render metadata.
 function createBlock(world, key, x, y, hp) {
   const body = Matter.Bodies.rectangle(x, y, BLOCK_WIDTH, BLOCK_HEIGHT, {
     isStatic: true,
@@ -34,6 +39,72 @@ function createBlock(world, key, x, y, hp) {
   };
 }
 
+// Generate an inclusive random integer for hp values and random block positions.
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Reject candidate positions that would visually overlap an existing block.
+function overlapsWithExistingBlocks(position, blocks) {
+  return blocks.some((block) => {
+    const overlapX =
+      Math.abs(block.x - position.x) < BLOCK_WIDTH + BLOCK_PADDING;
+    const overlapY =
+      Math.abs(block.y - position.y) < BLOCK_HEIGHT + BLOCK_PADDING;
+
+    return overlapX && overlapY;
+  });
+}
+
+// Scatter blocks across the upper half of the arena on each new game.
+function generateBlockLayouts() {
+  const blocks = [];
+  const minX = WALL_THICKNESS + BLOCK_WIDTH / 2 + 6;
+  const maxX = SCREEN_WIDTH - WALL_THICKNESS - BLOCK_WIDTH / 2 - 6;
+  const playableHeight = BOTTOM_BOUNDARY_Y - TOP_BOUNDARY_Y;
+  const minY = TOP_BOUNDARY_Y + 55;
+  const maxY = TOP_BOUNDARY_Y + playableHeight / 2 - 30;
+
+  for (let index = 0; index < BLOCK_COUNT; index += 1) {
+    let position = null;
+
+    // Try random positions first so each restart feels different without overlapping blocks.
+    for (let attempt = 0; attempt < 80; attempt += 1) {
+      const candidate = {
+        x: randomInt(minX, maxX),
+        y: randomInt(minY, maxY),
+      };
+
+      // Keep the candidate only when it does not collide with earlier blocks.
+      if (!overlapsWithExistingBlocks(candidate, blocks)) {
+        position = candidate;
+        break;
+      }
+    }
+
+    // Use a deterministic fallback so block generation never fails completely.
+    if (!position) {
+      // Fall back to a loose grid if random placement runs out of valid spots.
+      const column = index % 4;
+      const row = Math.floor(index / 4);
+      position = {
+        x: minX + column * (BLOCK_WIDTH + BLOCK_PADDING),
+        y: minY + row * (BLOCK_HEIGHT + BLOCK_PADDING),
+      };
+    }
+
+    blocks.push({
+      key: `block_${index + 1}`,
+      x: position.x,
+      y: position.y,
+      hp: randomInt(BLOCK_MIN_HP, BLOCK_MAX_HP),
+    });
+  }
+
+  return blocks;
+}
+
+// Create a full Matter world plus the renderable entities consumed by the game engine.
 export default function createEntities(callbacks = {}) {
   const engine = Matter.Engine.create({ enableSleeping: false });
   engine.gravity.y = 0;
@@ -115,6 +186,14 @@ export default function createEntities(callbacks = {}) {
 
   Matter.World.add(world, [ball, paddle, topWall, leftWall, rightWall, bottomWall]);
 
+  // Materialize the randomized block layout into named entity entries.
+  const blockEntities = Object.fromEntries(
+    generateBlockLayouts().map(({ key, x, y, hp }) => [
+      key,
+      createBlock(world, key, x, y, hp),
+    ])
+  );
+
   return {
     physics: {
       engine,
@@ -161,14 +240,7 @@ export default function createEntities(callbacks = {}) {
       size: [SCREEN_WIDTH, WALL_THICKNESS],
       renderer: Boundary,
     },
-
-    block_1: createBlock(world, "block_1", 60, 200, 2),
-    block_2: createBlock(world, "block_2", 155, 200, 1),
-    block_3: createBlock(world, "block_3", 300, 200, 3),
-    block_4: createBlock(world, "block_4", SCREEN_WIDTH - 55, 200, 2),
-    block_5: createBlock(world, "block_5", 95, 250, 3),
-    block_6: createBlock(world, "block_6", 230, 250, 1),
-    block_7: createBlock(world, "block_7", SCREEN_WIDTH - 100, 250, 2),
+    ...blockEntities,
   };
 }
 

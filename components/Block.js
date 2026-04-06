@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 
 export default function Block({ body, size, hp }) {
   const width = size[0];
@@ -22,9 +22,17 @@ export default function Block({ body, size, hp }) {
         top: y,
         width,
         height,
-        borderRadius: 4,
+        borderRadius: 10,
         backgroundColor,
+        borderWidth: 2,
+        borderColor: "#1f2937",
+        alignItems: "center",
+        justifyContent: "center",
       }}
-    />
+    >
+      <Text style={{ color: "white", fontSize: 16, fontWeight: "700" }}>
+        {hp}
+      </Text>
+    </View>
   );
 }

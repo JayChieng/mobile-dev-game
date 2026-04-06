@@ -15,7 +15,7 @@ export default function Boundary({ body, size }) {
         top: y,
         width,
         height,
-        backgroundColor: "#0f172a",
+        backgroundColor: "#2623f1",
       }}
     />
   );
